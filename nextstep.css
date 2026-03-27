@@ -48,6 +48,8 @@ html, body {
   color: var(--accent); letter-spacing: -0.5px;
 }
 .topbar-actions { display: flex; gap: 8px; }
+.inbox-quick-add { display: flex; gap: 6px; flex: 1; margin: 0 12px; }
+.inbox-quick-add input { flex: 1; min-width: 0; }
 
 button {
   font-family: 'DM Sans', sans-serif; font-size: 13px;

@@ -86,7 +86,12 @@ function uncompleteChain(list, tid) {
 
 // ── Render ──
 function render() {
-  let h = `<div class="topbar"><h1>nextup</h1><div class="topbar-actions">
+  let h = `<div class="topbar"><h1>nextup</h1>
+    <div class="inbox-quick-add">
+      <input type="text" id="topbar-inbox-input" placeholder="capture to inbox..." onkeydown="if(event.key==='Enter')quickAddInbox()">
+      <button class="btn-accent btn-sm" onclick="quickAddInbox()">+</button>
+    </div>
+    <div class="topbar-actions">
     <button class="btn-icon" onclick="showDataModal()" title="Import/Export">⇄</button>
     <button class="btn-icon" onclick="showCategoryModal()" title="Categories">⚙</button>
   </div></div>`;
@@ -384,6 +389,11 @@ function addTask(inputId, list) {
   const el=document.getElementById(inputId);const nm=el.value.trim();if(!nm)return;
   list.push(makeTask(nm));saveData(DATA);render();
   setTimeout(()=>{const e=document.getElementById(inputId);if(e)e.focus();},50);
+}
+function quickAddInbox() {
+  const el=document.getElementById('topbar-inbox-input');if(!el)return;
+  const nm=el.value.trim();if(!nm)return;
+  DATA.inbox.push(makeTask(nm));saveData(DATA);el.value='';toast('added to inbox');
 }
 function addTaskQ(pid) {
   const list=getTaskList(pid);if(!list)return;
