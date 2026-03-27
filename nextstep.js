@@ -306,6 +306,8 @@ function renderTaskTree(tasks, pid, depth, editable) {
       h += `<div class="task-actions">
         <button class="btn-ghost" onclick="showTaskModal('${pid}','${t.id}')" title="Edit">✎</button>
         <button class="btn-ghost" onclick="promoteTask('${pid}','${t.id}')" title="Promote">⤴</button>
+        ${depth===0&&tasks.length>1?`<button class="btn-ghost" onclick="showNestModal('${pid}','${t.id}')" title="Nest under sibling">⤵</button>`:''}
+        ${(pid==='__inbox'||pid==='__uncategorized')?`<button class="btn-ghost" onclick="showMoveModal('${pid}','${t.id}')" title="Move to project">→</button>`:''}
         <button class="btn-ghost btn-danger" onclick="deleteT('${pid}','${t.id}')">×</button>
       </div>`;
     }
@@ -428,6 +430,45 @@ function promoteTask(pid, tid) {
   if(pf) { pf.list.splice(pf.index+1, 0, f.task); }
   else { list.push(f.task); }
   saveData(DATA); render(); toast('promoted');
+}
+
+function showMoveModal(pid, tid) {
+  if(!DATA.projects.length) { toast('no projects yet'); return; }
+  const opts = DATA.projects.map(p=>`<button class="btn" style="text-align:left;" onclick="moveToProject('${pid}','${tid}','${p.id}')">${esc(p.name)}</button>`).join('');
+  const html=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-header"><h2>Move to Project</h2><button class="btn-icon" onclick="closeModal()">×</button></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">${opts}</div>
+  </div></div>`;
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function moveToProject(fromPid, tid, toPid) {
+  const fromList = getTaskList(fromPid); if(!fromList) return;
+  const toProj = DATA.projects.find(p=>p.id===toPid); if(!toProj) return;
+  const f = findTask(fromList, tid); if(!f) return;
+  f.list.splice(f.index, 1);
+  toProj.tasks.push(f.task);
+  saveData(DATA); closeModal(); render(); toast('moved');
+}
+
+function showNestModal(pid, tid) {
+  const list = getTaskList(pid); if(!list) return;
+  const siblings = list.filter(t=>t.id!==tid);
+  if(!siblings.length) { toast('no siblings'); return; }
+  const opts = siblings.map(s=>`<button class="btn" style="text-align:left;" onclick="nestUnder('${pid}','${tid}','${s.id}')">${esc(s.name)}</button>`).join('');
+  const html=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-header"><h2>Nest Under</h2><button class="btn-icon" onclick="closeModal()">×</button></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">${opts}</div>
+  </div></div>`;
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function nestUnder(pid, tid, siblingId) {
+  const list = getTaskList(pid); if(!list) return;
+  const idx = list.findIndex(t=>t.id===tid); if(idx===-1) return;
+  const [task] = list.splice(idx, 1);
+  const sibling = list.find(t=>t.id===siblingId); if(!sibling) { list.splice(idx,0,task); return; }
+  sibling.children.push(task);
+  uncompleteChain(list, siblingId);
+  saveData(DATA); closeModal(); render(); toast('nested');
 }
 
 function showTaskModal(pid, tid) {
