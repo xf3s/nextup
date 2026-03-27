@@ -188,9 +188,6 @@ function renderProjects() {
   h += `<div class="section-label">uncategorized tasks</div>`;
   h += renderTaskTree(DATA.uncategorized, '__uncategorized', 0, true);
   h += `<div class="inline-add" style="margin-top:8px;"><input type="text" placeholder="add loose task..." id="add-uncat-input" onkeydown="if(event.key==='Enter')addTask('add-uncat-input',DATA.uncategorized)"><button class="btn-accent btn-sm" onclick="addTask('add-uncat-input',DATA.uncategorized)">+</button></div>`;
-  h += `<div class="section-label" style="margin-top:24px;">inbox</div>`;
-  h += renderTaskTree(DATA.inbox, '__inbox', 0, true);
-  h += `<div class="inline-add" style="margin-top:8px;"><input type="text" placeholder="capture to inbox..." id="add-inbox-input" onkeydown="if(event.key==='Enter')addTask('add-inbox-input',DATA.inbox)"><button class="btn-accent btn-sm" onclick="addTask('add-inbox-input',DATA.inbox)">+</button></div>`;
 
   h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;margin-top:24px;">
     <span style="font-size:13px;color:var(--text-dim);">${visibleProjects.length} project${visibleProjects.length!==1?'s':''}</span>
@@ -210,6 +207,10 @@ function renderProjects() {
     if(total) h+=`<div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-count">${done}/${total}</div>`;
     h+='</div>';
   }
+
+  h += `<div class="section-label" style="margin-top:24px;">inbox</div>`;
+  h += renderTaskTree(DATA.inbox, '__inbox', 0, true);
+  h += `<div class="inline-add" style="margin-top:8px;"><input type="text" placeholder="capture to inbox..." id="add-inbox-input" onkeydown="if(event.key==='Enter')addTask('add-inbox-input',DATA.inbox)"><button class="btn-accent btn-sm" onclick="addTask('add-inbox-input',DATA.inbox)">+</button></div>`;
 
   if(DATA.archive.length) h+=`<div style="margin-top:20px;text-align:center;"><button class="btn-ghost" onclick="nav('archive')">graveyard (${DATA.archive.length})</button></div>`;
   return h;
@@ -249,13 +250,13 @@ function renderAllTasks() {
     const content = renderFiltered(DATA.uncategorized, [], '__uncategorized');
     if(content) { any=true; h+=`<div class="tasks-project-header">uncategorized</div>`+content; }
   }
-  if(DATA.inbox.length) {
-    const content = renderFiltered(DATA.inbox, [], '__inbox');
-    if(content) { any=true; h+=`<div class="tasks-project-header">inbox</div>`+content; }
-  }
   for(const p of DATA.projects) {
     const content = renderFiltered(p.tasks, p.categoryIds, p.id);
     if(content) { any=true; h+=`<div class="tasks-project-header" onclick="openProject('${p.id}')">${esc(p.name)}</div>`+content; }
+  }
+  if(DATA.inbox.length) {
+    const content = renderFiltered(DATA.inbox, [], '__inbox');
+    if(content) { any=true; h+=`<div class="tasks-project-header">inbox</div>`+content; }
   }
   if(!any) h+=`<div class="empty"><p>${af.length?'nothing matches those filters.':'no tasks yet.'}</p></div>`;
   return h;
